@@ -35,7 +35,7 @@ export default function DeliveryPickupsPage() {
   const loadData = () => {
     setLoading(true);
     Promise.all([
-      user?.area ? api.get('/delivery/pickups', { params: { area: user.area } }) : Promise.resolve({ data: { data: [] } }),
+      api.get('/delivery/pickups'),
       api.get('/delivery/my-deliveries'),
     ])
       .then(([pickupsRes, activeRes]) => {
@@ -46,7 +46,7 @@ export default function DeliveryPickupsPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { loadData(); }, [user?.area]);
+  useEffect(() => { loadData(); }, []);
 
   const renderOrder = (order: DeliveryOrder, actionLabel: string) => {
     const kitchen = typeof order.kitchen === 'string' ? null : order.kitchen;
@@ -94,11 +94,15 @@ export default function DeliveryPickupsPage() {
         <p className="text-stone-500">লোড হচ্ছে...</p>
       ) : (
         <>
-          <h2 className="font-semibold text-stone-700 mb-3">🆕 নতুন পিকআপ (এলাকা: {user?.area || 'সেট করা নেই'})</h2>
-          {!user?.area ? (
-            <p className="text-stone-500 mb-8">প্রোফাইলে এলাকা সেট করা নেই।</p>
-          ) : available.length === 0 ? (
-            <p className="text-stone-500 mb-8">এখন কোনো পিকআপ প্রস্তুত নেই।</p>
+          <h2 className="font-semibold text-stone-700 mb-3">
+            🆕 নতুন পিকআপ
+            {user?.deliveryAreaIds?.length ? ` (${user.deliveryAreaIds.length}টি এরিয়া নির্বাচিত)` : ''}
+          </h2>
+          {available.length === 0 ? (
+            <p className="text-stone-500 mb-8">
+              এখন কোনো পিকআপ প্রস্তুত নেই। আপনার লোকেশন ও ডেলিভারি এরিয়া{' '}
+              <Link href="/profile" className="text-orange-600 underline">প্রোফাইলে</Link> সেট করুন।
+            </p>
           ) : (
             <div className="space-y-4 mb-8">
               {available.map((o) => renderOrder(o, 'পিকআপ কনফার্ম করুন →'))}

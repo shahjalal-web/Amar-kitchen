@@ -12,14 +12,17 @@ const NAV_ITEMS = {
     { href: '/admin/foods', label: '🍽️ খাবার লাইব্রেরি' },
     { href: '/admin/packages', label: '📦 প্যাকেজ' },
     { href: '/admin/approvals', label: '✅ অ্যাপ্রুভাল' },
+    { href: '/admin/areas', label: '🗺️ এরিয়া' },
     { href: '/admin/config', label: '⚙️ কনফিগ' },
     { href: '/admin/finance', label: '💰 ফিনান্স' },
+    { href: '/profile', label: '📍 প্রোফাইল' },
   ],
   kitchen: [
     { href: '/kitchen', label: '📊 ড্যাশবোর্ড' },
     { href: '/kitchen/menu', label: '🍱 আজকের মেনু' },
     { href: '/kitchen/orders', label: '📋 অর্ডার' },
     { href: '/kitchen/wallet', label: '💰 ওয়ালেট' },
+    { href: '/profile', label: '📍 প্রোফাইল' },
   ],
   user: [
     { href: '/user', label: '🏠 হোম' },
@@ -27,12 +30,14 @@ const NAV_ITEMS = {
     { href: '/user/orders', label: '📋 আমার অর্ডার' },
     { href: '/user/subscription', label: '🔔 সাবস্ক্রিপশন' },
     { href: '/user/resell', label: '♻️ রিসেল' },
+    { href: '/profile', label: '📍 প্রোফাইল' },
   ],
   delivery: [
     { href: '/delivery', label: '📊 ড্যাশবোর্ড' },
     { href: '/delivery/pickups', label: '📦 পিকআপ' },
     { href: '/delivery/scan', label: '📱 কোড স্ক্যান' },
     { href: '/delivery/earnings', label: '💵 আয়' },
+    { href: '/profile', label: '📍 প্রোফাইল' },
   ],
 };
 

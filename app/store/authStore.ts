@@ -15,6 +15,11 @@ interface AuthUser {
   kitchenName?: string;
   buildingName?: string;
   area?: string;
+  location?: {
+    type: 'Point';
+    coordinates: [number, number]; // [lng, lat]
+  };
+  deliveryAreaIds?: string[];
 }
 
 interface AuthState {
