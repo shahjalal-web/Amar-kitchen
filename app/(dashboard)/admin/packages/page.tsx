@@ -1,4 +1,5 @@
 'use client';
+import Loader from '../../../components/ui/Loader';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../../lib/api';
@@ -226,7 +227,7 @@ export default function AdminPackagesPage() {
       )}
 
       {loading ? (
-        <p className="text-stone-500">লোড হচ্ছে...</p>
+        <Loader />
       ) : packages.length === 0 ? (
         <p className="text-stone-500">কোনো প্যাকেজ নেই। নতুন তৈরি করুন।</p>
       ) : (

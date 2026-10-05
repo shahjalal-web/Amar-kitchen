@@ -1,4 +1,5 @@
 'use client';
+import { SkeletonCards } from '../../../components/ui/Loader';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../../store/authStore';
@@ -61,7 +62,7 @@ export default function UserResellPage() {
       {!user?.areaId ? (
         <p className="text-stone-500">প্রোফাইলে এলাকা সেট করা নেই।</p>
       ) : loading ? (
-        <p className="text-stone-500">লোড হচ্ছে...</p>
+        <SkeletonCards count={4} />
       ) : orders.length === 0 ? (
         <p className="text-stone-500">এই মুহূর্তে কোনো রিসেল অফার নেই।</p>
       ) : (

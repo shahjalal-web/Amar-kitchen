@@ -1,4 +1,5 @@
 'use client';
+import Loader from '../../../components/ui/Loader';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../../lib/api';
@@ -78,7 +79,7 @@ export default function KitchenWalletPage() {
       <p className="text-stone-500 mb-6">ব্যালেন্স দেখুন ও উইথড্র রিকোয়েস্ট করুন</p>
 
       {loading || !wallet ? (
-        <p className="text-stone-500">লোড হচ্ছে...</p>
+        <Loader />
       ) : (
         <>
           <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">

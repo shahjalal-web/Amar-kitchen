@@ -86,3 +86,57 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ── লোডার: কড়াই, ধোঁয়া, লাফানো দানা ── */
+.sk-steam {
+  fill: none;
+  stroke: #a8a29e;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  opacity: 0;
+  animation: sk-steam 1.8s ease-in-out infinite;
+}
+.sk-steam-2 { animation-delay: .3s; }
+.sk-steam-3 { animation-delay: .6s; }
+@keyframes sk-steam {
+  0%   { opacity: 0; transform: translateY(6px); }
+  40%  { opacity: .9; }
+  100% { opacity: 0; transform: translateY(-6px); }
+}
+.sk-pot { transform-origin: 32px 40px; animation: sk-wobble 1.8s ease-in-out infinite; }
+@keyframes sk-wobble {
+  0%, 100% { transform: rotate(-4deg); }
+  50%      { transform: rotate(4deg); }
+}
+.sk-bit { animation: sk-hop .9s ease-in-out infinite; }
+.sk-bit-2 { animation-delay: .15s; }
+.sk-bit-3 { animation-delay: .3s; }
+@keyframes sk-hop {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-9px); }
+}
+.sk-label { animation: sk-pulse 1.8s ease-in-out infinite; }
+@keyframes sk-pulse { 50% { opacity: .45; } }
+
+.sk-shimmer {
+  background: linear-gradient(90deg, #f5f5f4 25%, #e7e5e4 37%, #f5f5f4 63%);
+  background-size: 400% 100%;
+  animation: sk-shimmer 1.4s ease infinite;
+}
+@keyframes sk-shimmer {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* ── খাবারের ছবির মডাল ── */
+@keyframes sk-sheet-up { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes sk-fade { from { opacity: 0; } to { opacity: 1; } }
+.sk-backdrop { animation: sk-fade .18s ease both; }
+.sk-sheet { animation: sk-sheet-up .22s ease both; }
+.sk-no-scrollbar { scrollbar-width: none; }
+.sk-no-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-steam, .sk-pot, .sk-bit, .sk-label, .sk-shimmer, .sk-backdrop, .sk-sheet { animation: none; }
+  .sk-steam { opacity: .6; }
+}

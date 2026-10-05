@@ -1,41 +1,37 @@
 'use client';
 import { useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../lib/firebase';
-import { useAuthStore } from '../store/authStore';
+import { readCachedSession, useAuthStore } from '../store/authStore';
 import api from '../lib/api';
 
+// সেশন = ব্যাকএন্ডের নিজের JWT (Firebase শুধু লগইন/রেজিস্টারে লাগে)।
+// আগে Firebase-এর onAuthStateChanged-এর অপেক্ষা করা হতো, তাতে প্রতিবার পেজ খুলতে দেরি হতো।
+// এখন: সেভ করা প্রোফাইল দিয়ে সাথে সাথে দেখাই, তারপর পেছনে /auth/profile থেকে হালনাগাদ করি।
 export const useAuthInit = () => {
   const { setAuth, clearAuth, setLoading } = useAuthStore();
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const storedToken = localStorage.getItem('ak_token');
+    const cached = readCachedSession();
+    let token: string | null = null;
+    try { token = localStorage.getItem('ak_token'); } catch { /* প্রাইভেট মোড */ }
 
-        // No backend token yet — login page is handling the flow, don't interfere.
-        // তবে পুরনো কুকি থেকে গেলে মুছে দাও, নইলে proxy ভাবে লগইন করা আছে।
-        if (!storedToken) {
-          if (document.cookie.includes('ak_token=')) {
-            document.cookie = 'ak_token=; path=/; max-age=0; SameSite=Lax';
-          }
-          setLoading(false);
-          return;
-        }
-
-        try {
-          const res = await api.get('/auth/profile', {
-            headers: { Authorization: `Bearer ${storedToken}` },
-          });
-          setAuth(res.data.data, storedToken);
-        } catch {
-          clearAuth();
-        }
-      } else {
-        clearAuth();
-      }
+    if (!token) {
+      // টোকেন নেই কিন্তু পুরনো কুকি থাকলে মুছে দাও, নইলে proxy ভাবে লগইন করা আছে
+      if (document.cookie.includes('ak_token=')) clearAuth();
       setLoading(false);
-    });
-    return () => unsub();
+      return;
+    }
+
+    if (cached) {
+      setAuth(cached.user, cached.token);
+      setLoading(false);
+    }
+
+    api.get('/auth/profile')
+      .then((res) => setAuth(res.data.data, token!))
+      .catch((err) => {
+        // শুধু টোকেন অবৈধ হলে লগআউট; নেটওয়ার্ক সমস্যায় সেভ করা প্রোফাইলই থাকুক
+        if (err?.response?.status === 401 || !cached) clearAuth();
+      })
+      .finally(() => setLoading(false));
   }, [setAuth, clearAuth, setLoading]);
 };

@@ -1,4 +1,7 @@
 'use client';
+import { useAuthStore } from '../../../store/authStore';
+import { can } from '../../../lib/permissions';
+import Loader from '../../../components/ui/Loader';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../../lib/api';
@@ -9,6 +12,8 @@ interface FinanceSummary {
   deliveredOrders: number;
   commissionRate: number;
   commissionEarned: number;
+  deliveryCommissionRate?: number;
+  deliveryCommissionEarned?: number;
   totalKitchenWalletBalance: number;
   pendingWithdrawals: { count: number; amount: number };
   totalPaidOut: number;
@@ -36,6 +41,7 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default function AdminFinancePage() {
+  const canManage = can(useAuthStore((st) => st.user), 'finance.manage');
   const [summary, setSummary] = useState<FinanceSummary | null>(null);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,7 +99,7 @@ export default function AdminFinancePage() {
       <p className="text-stone-500 mb-8">আয়, কমিশন ও উইথড্র রিকোয়েস্ট দেখুন</p>
 
       {loading || !summary ? (
-        <p className="text-stone-500">লোড হচ্ছে...</p>
+        <Loader />
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
@@ -109,6 +115,9 @@ export default function AdminFinancePage() {
             <div className="bg-white rounded-2xl p-5 shadow-sm">
               <p className="text-xs text-stone-500 mb-1">মোট ডেলিভারি চার্জ</p>
               <p className="text-2xl font-bold text-blue-600">৳{summary.totalDeliveryCharge.toLocaleString('bn-BD')}</p>
+              {summary.deliveryCommissionEarned !== undefined && (
+                <p className="text-xs text-stone-500 mt-1">এর থেকে কমিশন ({summary.deliveryCommissionRate}%): <b className="text-green-700">৳{summary.deliveryCommissionEarned.toLocaleString('bn-BD')}</b></p>
+              )}
             </div>
             <div className="bg-white rounded-2xl p-5 shadow-sm">
               <p className="text-xs text-stone-500 mb-1">কিচেন ওয়ালেট ব্যালেন্স (মোট)</p>
@@ -139,6 +148,7 @@ export default function AdminFinancePage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <p className="text-xl font-bold text-orange-600">৳{w.amount}</p>
+                    {canManage && (<>
                     <button
                       onClick={() => handleApprove(w._id)}
                       disabled={processingId === w._id}
@@ -153,6 +163,7 @@ export default function AdminFinancePage() {
                     >
                       বাতিল
                     </button>
+                    </>)}
                   </div>
                 </div>
               ))}

@@ -8,9 +8,16 @@ const nextConfig: NextConfig = {
     root: path.resolve(__dirname),
   },
   images: {
+    // Cloudinary নিজের CDN-এ মাপমতো ছোট করে f_auto (WebP/AVIF) দেয় — app/lib/imageLoader.ts
+    loader: "custom",
+    loaderFile: "./app/lib/imageLoader.ts",
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
     ],
+  },
+  experimental: {
+    // বড় প্যাকেজ থেকে শুধু দরকারি অংশ বান্ডেলে নেয়
+    optimizePackageImports: ["firebase", "react-hot-toast"],
   },
 };
 

@@ -3,12 +3,17 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../../lib/api';
 import MyFoods from './MyFoods';
+import Loader from '../../../components/ui/Loader';
+import { FoodPreview, FoodThumb } from '../../../components/shared/FoodViewer';
+import { FoodImage } from '../../../lib/foodImages';
 
 interface FoodItem {
   _id: string;
   name: string;
   category: string;
   source?: 'admin' | 'kitchen';
+  image?: string;
+  images?: FoodImage[];
 }
 
 interface MenuItem {
@@ -127,14 +132,14 @@ export default function KitchenMenuPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-stone-800 mb-1">🍱 আজকের মেনু</h1>
-          <p className="text-stone-500">আজকের জন্য খাবারের তালিকা ও মূল্য সেট করুন</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-stone-800 mb-1">🍱 আজকের মেনু</h1>
+          <p className="text-sm text-stone-500">আজকের জন্য খাবারের তালিকা ও মূল্য সেট করুন</p>
         </div>
         {menu && (
           <button
             onClick={handleReady}
             disabled={markingReady || menu.isReadyForPickup}
-            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium px-4 py-2 rounded-xl transition"
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium px-4 py-2.5 rounded-xl transition"
           >
             {menu.isReadyForPickup ? '✅ পিকআপের জন্য প্রস্তুত' : markingReady ? 'পাঠানো হচ্ছে...' : 'পিকআপের জন্য প্রস্তুত করুন'}
           </button>
@@ -142,23 +147,30 @@ export default function KitchenMenuPage() {
       </div>
 
       {loading ? (
-        <p className="text-stone-500">লোড হচ্ছে...</p>
+        <Loader label="মেনু আনা হচ্ছে…" />
       ) : foods.length === 0 ? (
         <p className="text-stone-500">কোনো সক্রিয় খাবার নেই। নিচে নিজের খাবার যোগ করুন অথবা অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
       ) : (
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-sm font-medium text-stone-700">আজকের আইটেম ও মূল্য</label>
               <button type="button" onClick={addItemRow} className="text-sm text-orange-600 hover:underline">+ আইটেম যোগ করুন</button>
             </div>
             <div className="space-y-2">
-              {form.items.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-2">
+              {form.items.map((item, idx) => {
+                const food = foods.find((f) => f._id === item.foodItem);
+                return (
+                <div key={idx} className="flex flex-wrap sm:flex-nowrap items-center gap-2 p-2 sm:p-0 rounded-xl bg-stone-50 sm:bg-transparent">
+                  {food && (
+                    <FoodPreview food={food} price={item.price || undefined}>
+                      <FoodThumb food={food} size="sm" />
+                    </FoodPreview>
+                  )}
                   <select
                     value={item.foodItem}
                     onChange={(e) => updateItemRow(idx, 'foodItem', e.target.value)}
-                    className="flex-1 border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    className={`${food ? 'w-[calc(100%-4rem)]' : 'w-full'} sm:w-auto sm:flex-1 min-w-0 border border-stone-300 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400`}
                   >
                     <optgroup label="অ্যাডমিন লাইব্রেরি">
                       {foods.filter((f) => f.source !== 'kitchen').map((f) => <option key={f._id} value={f._id}>{f.name} ({f.category})</option>)}
@@ -175,11 +187,13 @@ export default function KitchenMenuPage() {
                     value={item.price}
                     onChange={(e) => updateItemRow(idx, 'price', Number(e.target.value))}
                     placeholder="মূল্য"
-                    className="w-24 border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    inputMode="numeric"
+                    className="flex-1 sm:flex-none sm:w-24 border border-stone-300 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
                   />
-                  <button type="button" onClick={() => removeItemRow(idx)} className="text-red-500 text-sm hover:underline">মুছুন</button>
+                  <button type="button" onClick={() => removeItemRow(idx)} className="text-red-500 text-sm px-2 py-2 hover:underline">মুছুন</button>
                 </div>
-              ))}
+                );
+              })}
               {form.items.length === 0 && <p className="text-sm text-stone-400">কোনো আইটেম নেই</p>}
             </div>
           </div>
@@ -207,7 +221,7 @@ export default function KitchenMenuPage() {
           <button
             type="submit"
             disabled={saving}
-            className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold px-6 py-2.5 rounded-xl transition"
+            className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold px-6 py-3 rounded-xl transition"
           >
             {saving ? 'সংরক্ষণ হচ্ছে...' : 'মেনু সংরক্ষণ করুন'}
           </button>

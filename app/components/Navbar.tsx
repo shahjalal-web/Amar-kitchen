@@ -2,9 +2,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { signOut } from 'firebase/auth';
 import toast from 'react-hot-toast';
-import { auth } from '../lib/firebase';
+import { firebaseSignOut } from '../lib/firebaseSignOut';
 import { useAuthStore } from '../store/authStore';
 
 const DASHBOARD_MAP: Record<string, string> = {
@@ -45,7 +44,7 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await firebaseSignOut();
     clearAuth();
     toast.success('লগআউট হয়েছে');
     window.location.href = '/';

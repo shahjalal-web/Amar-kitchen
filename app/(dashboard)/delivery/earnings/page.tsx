@@ -1,4 +1,5 @@
 'use client';
+import Loader from '../../../components/ui/Loader';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../../lib/api';
@@ -41,7 +42,7 @@ export default function DeliveryEarningsPage() {
       <p className="text-stone-500 mb-6">আজকের ডেলিভারি ও আয়ের হিসাব</p>
 
       {loading || !data ? (
-        <p className="text-stone-500">লোড হচ্ছে...</p>
+        <Loader />
       ) : (
         <>
           <div className="grid grid-cols-2 gap-4 mb-8 max-w-md">

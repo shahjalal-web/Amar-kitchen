@@ -14,6 +14,16 @@ const demo = (key: string, label: string, sub: string): DemoAccount => ({
 
 const GROUPS: { title: string; accounts: DemoAccount[] }[] = [
   {
+    title: '🛡️ অ্যাডমিন স্টাফ (রোল অনুযায়ী)',
+    accounts: [
+      demo('subadmin', 'রাশেদুল ইসলাম', 'সাব অ্যাডমিন'),
+      demo('manager', 'নাদিয়া সুলতানা', 'ম্যানেজার'),
+      demo('accounts', 'কামরুল হাসান', 'অ্যাকাউন্টস'),
+      demo('support', 'মিতু আক্তার', 'কাস্টমার সাপোর্ট'),
+      demo('moderator', 'তারেক মাহমুদ', 'কনটেন্ট মডারেটর'),
+    ],
+  },
+  {
     title: '👩‍🍳 কিচেন',
     accounts: [
       demo('kitchen1', 'রহিমার রান্নাঘর', 'কান্দিরপাড়, কুমিল্লা'),

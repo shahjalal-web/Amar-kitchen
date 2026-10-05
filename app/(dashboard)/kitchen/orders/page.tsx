@@ -1,4 +1,6 @@
 'use client';
+import { toLatLng, mapsLink } from '../../../components/shared/MapPicker';
+import { SkeletonCards } from '../../../components/ui/Loader';
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../../lib/api';
@@ -24,6 +26,8 @@ interface Order {
   status: OrderStatus;
   uniqueCode: string;
   deliveryAddress: string;
+  deliveryLocation?: { coordinates: [number, number] } | null;
+  distanceKm?: number;
   customerPhone?: string;
   area: string;
   thana?: string;
@@ -178,7 +182,7 @@ export default function KitchenOrdersPage() {
       </div>
 
       {loading ? (
-        <p className="text-stone-500">লোড হচ্ছে...</p>
+        <SkeletonCards count={4} />
       ) : orders.length === 0 ? (
         <p className="text-stone-500">কোনো অর্ডার নেই।</p>
       ) : (
@@ -195,6 +199,9 @@ export default function KitchenOrdersPage() {
                     </div>
                     <p className="text-sm text-stone-600">{customer ? `${customer.name} · 📞 ${order.customerPhone || customer.phone}` : ''}</p>
                     <p className="text-sm text-stone-500">{order.deliveryAddress}</p>
+                    {(() => { const p = toLatLng(order.deliveryLocation); return p ? (
+                      <a href={mapsLink(p)} target="_blank" rel="noopener noreferrer" className="inline-block text-xs text-blue-700 hover:underline">🗺️ গ্রাহকের লোকেশন ম্যাপে{order.distanceKm ? ` · ~${order.distanceKm} কিমি` : ''}</a>
+                    ) : null; })()}
                     <DeliveryInfo status={order.status} deliveryMode={order.deliveryMode} deliveryBoy={order.deliveryBoy} viewer="kitchen" />
                     <p className="text-xs text-stone-400 mt-1">{new Date(order.createdAt).toLocaleString('bn-BD')}</p>
                   </div>

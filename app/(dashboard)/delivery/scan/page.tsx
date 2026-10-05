@@ -1,4 +1,5 @@
 'use client';
+import Loader from '../../../components/ui/Loader';
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -120,7 +121,7 @@ function ScanForm() {
 
 export default function DeliveryScanPage() {
   return (
-    <Suspense fallback={<p className="text-stone-500">লোড হচ্ছে...</p>}>
+    <Suspense fallback={<Loader />}>
       <ScanForm />
     </Suspense>
   );

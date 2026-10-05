@@ -1,4 +1,5 @@
 'use client';
+import Loader from '../../components/ui/Loader';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../lib/api';
@@ -7,6 +8,8 @@ import { useAuthStore } from '../../store/authStore';
 import LocationPicker from '../../components/shared/LocationPicker';
 import DeliveryAreasPicker from '../../components/shared/DeliveryAreasPicker';
 import AddressBook from '../../components/shared/AddressBook';
+import MapPicker, { LatLng, toLatLng, areaForPin } from '../../components/shared/MapPicker';
+import { useAreaDetail } from '../../lib/locations';
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'অ্যাডমিন',
@@ -17,7 +20,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 export default function ProfilePage() {
   const { user } = useAuthStore();
-  if (!user) return <p className="text-stone-500">লোড হচ্ছে...</p>;
+  if (!user) return <Loader />;
   // ইউজার লোড হওয়ার পর ফর্মের প্রাথমিক মান সেট করতে key দিয়ে রিমাউন্ট
   return <ProfileContent key={user._id} />;
 }
@@ -27,6 +30,8 @@ function ProfileContent() {
 
   const [areaId, setAreaId] = useState(user?.areaId || '');
   const [buildingAddress, setBuildingAddress] = useState(user?.buildingAddress || '');
+  const [kitchenPin, setKitchenPin] = useState<LatLng | null>(toLatLng(user?.kitchenLocation));
+  const kitchenArea = useAreaDetail(user?.role === 'kitchen' ? areaId : '');
   const [savingKitchen, setSavingKitchen] = useState(false);
 
   const [deliveryAreaIds, setDeliveryAreaIds] = useState<string[]>(user?.deliveryAreaIds || []);
@@ -41,7 +46,7 @@ function ProfileContent() {
     if (!areaId) return toast.error('শহর, থানা ও এরিয়া নির্বাচন করুন');
     setSavingKitchen(true);
     try {
-      const res = await api.patch('/auth/profile', { areaId, buildingAddress });
+      const res = await api.patch('/auth/profile', { areaId, buildingAddress, kitchenLocation: kitchenPin });
       if (token) setAuth(res.data.data, token);
       toast.success('কিচেনের লোকেশন আপডেট হয়েছে');
     } catch (err) {
@@ -100,6 +105,14 @@ function ProfileContent() {
               onChange={(e) => setBuildingAddress(e.target.value)}
               placeholder="বিস্তারিত ঠিকানা (বাসা/রোড নম্বর)"
               className="w-full border border-stone-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-400"
+            />
+            <MapPicker
+              value={kitchenPin}
+              onChange={setKitchenPin}
+              areaCenter={kitchenArea?.location?.coordinates ?? null}
+              onAreaDetected={(r) => { const a = areaForPin(areaId, r); if (a) { setAreaId(a._id); toast.success(`এলাকা: ${a.name} — ভুল হলে উপর থেকে বদলে নিন`); } }}
+              title="🗺️ ম্যাপে কিচেনের জায়গা দেখান"
+              hint="🔒 গ্রাহকরা আপনার সঠিক লোকেশন কখনো দেখতে পাবেন না — শুধু দূরত্ব আর ডেলিভারি চার্জ হিসাবে লাগে। অ্যাসাইন করা ডেলিভারি বয় পিকআপের জন্য দেখেন।"
             />
           </div>
           <button

@@ -1,4 +1,8 @@
 'use client';
+import { toLatLng, mapsLink } from '../../../components/shared/MapPicker';
+import { useAuthStore } from '../../../store/authStore';
+import { can } from '../../../lib/permissions';
+import { SkeletonCards } from '../../../components/ui/Loader';
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../../lib/api';
@@ -25,7 +29,8 @@ interface AdminUser {
 }
 interface UserDetail {
   user: Omit<AdminUser, 'deliveryAreaIds'> & {
-    addresses?: { _id: string; label: string; buildingName: string; addressLine: string; areaId?: { name: string; zipCode: string; thana?: { name: string }; city?: { name: string } } }[];
+    addresses?: { _id: string; label: string; buildingName: string; addressLine: string; location?: { coordinates: [number, number] } | null; areaId?: { name: string; zipCode: string; thana?: { name: string }; city?: { name: string } } }[];
+    kitchenLocation?: { coordinates: [number, number] } | null;
     deliveryAreaIds?: { _id: string; name: string; zipCode: string }[];
     buildingAddress?: string;
     nidNumber?: string;
@@ -43,6 +48,7 @@ const ROLE_LABEL: Record<Role, string> = { user: 'গ্রাহক', kitchen: 
 const inputCls = 'border border-stone-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-400';
 
 export default function AdminUsersPage() {
+  const canManage = can(useAuthStore((st) => st.user), 'users.manage');
   const [role, setRole] = useState<'all' | Role>('all');
   const [status, setStatus] = useState('');
   const [q, setQ] = useState('');
@@ -126,9 +132,40 @@ export default function AdminUsersPage() {
       <p className="text-sm text-stone-500 mb-3">মোট {data.total.toLocaleString('bn-BD')} জন</p>
 
       {loading ? (
-        <p className="text-stone-500">লোড হচ্ছে...</p>
+        <SkeletonCards count={4} />
       ) : (
-        <div className="bg-white rounded-2xl shadow-sm overflow-x-auto">
+        <>
+        {/* মোবাইল: কার্ড */}
+        <div className="md:hidden space-y-2">
+          {data.items.map((u) => (
+            <div key={u._id} className="bg-white rounded-2xl p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-2">
+                <button onClick={() => openDetail(u._id)} className="text-left min-w-0">
+                  <p className="font-semibold text-stone-800">{u.kitchenName || u.name}</p>
+                  <p className="text-xs text-stone-500">{u.kitchenName ? `${u.name} · ` : ''}{u.phone}</p>
+                </button>
+                {statusChip(u)}
+              </div>
+              <p className="text-sm text-stone-600 mt-2">
+                {ROLE_LABEL[u.role]}{u.role === 'kitchen' && u.rating ? <span className="text-amber-500"> ⭐{u.rating.toFixed(1)}</span> : null}
+                {' · '}{u.role === 'delivery' ? `${(u.deliveryAreaIds?.length ?? 0).toLocaleString('bn-BD')}টি এরিয়া` : u.area ?? '—'}
+                {' · '}{u.orderCount.toLocaleString('bn-BD')}টি অর্ডার
+                {u.role === 'kitchen' && <span className="text-stone-400"> · লিমিট {u.orderLimit}/দিন</span>}
+              </p>
+              <div className="flex flex-wrap gap-2 mt-3 text-sm">
+                <button onClick={() => openDetail(u._id)} className="px-3 py-1.5 rounded-lg bg-purple-50 text-purple-700">বিস্তারিত</button>
+                {canManage && u.role === 'kitchen' && <button onClick={() => changeLimit(u)} className="px-3 py-1.5 rounded-lg bg-stone-100 text-stone-700">লিমিট</button>}
+                {canManage && (
+                  <button onClick={() => toggleActive(u)} className={`px-3 py-1.5 rounded-lg ${u.isActive ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700'}`}>
+                    {u.isActive ? 'ব্লক' : 'আনব্লক'}
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+          {data.items.length === 0 && <p className="p-4 text-stone-500">কেউ পাওয়া যায়নি।</p>}
+        </div>
+        <div className="hidden md:block bg-white rounded-2xl shadow-sm overflow-x-auto">
           <table className="w-full text-sm min-w-180">
             <thead>
               <tr className="text-left text-xs text-stone-500 border-b">
@@ -154,10 +191,12 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="p-3">{statusChip(u)}</td>
                   <td className="p-3 text-right whitespace-nowrap">
-                    {u.role === 'kitchen' && <button onClick={() => changeLimit(u)} className="text-xs text-purple-600 hover:underline mr-3">লিমিট</button>}
-                    <button onClick={() => toggleActive(u)} className={`text-xs hover:underline ${u.isActive ? 'text-red-600' : 'text-green-700'}`}>
-                      {u.isActive ? 'ব্লক' : 'আনব্লক'}
-                    </button>
+                    {canManage && u.role === 'kitchen' && <button onClick={() => changeLimit(u)} className="text-xs text-purple-600 hover:underline mr-3 py-1">লিমিট</button>}
+                    {canManage && (
+                      <button onClick={() => toggleActive(u)} className={`text-xs hover:underline py-1 ${u.isActive ? 'text-red-600' : 'text-green-700'}`}>
+                        {u.isActive ? 'ব্লক' : 'আনব্লক'}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -165,6 +204,7 @@ export default function AdminUsersPage() {
           </table>
           {data.items.length === 0 && <p className="p-4 text-stone-500">কেউ পাওয়া যায়নি।</p>}
         </div>
+        </>
       )}
 
       {data.pages > 1 && (
@@ -192,6 +232,12 @@ export default function AdminUsersPage() {
               <p><span className="text-stone-400">ফোন:</span> {detail.user.phone}</p>
               {detail.user.nidNumber && <p><span className="text-stone-400">এনআইডি:</span> {detail.user.nidNumber}</p>}
               {detail.user.area && <p><span className="text-stone-400">এলাকা:</span> {detail.user.area}{detail.user.buildingAddress ? `, ${detail.user.buildingAddress}` : ''}</p>}
+              {detail.user.role === 'kitchen' && (() => { const p = toLatLng(detail.user.kitchenLocation); return (
+                <p><span className="text-stone-400">আসল লোকেশন:</span>{' '}
+                  {p ? <a href={mapsLink(p)} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">🗺️ ম্যাপে দেখুন ({p.lat.toFixed(5)}, {p.lng.toFixed(5)})</a> : <span className="text-stone-400">পিন দেওয়া হয়নি</span>}
+                  <span className="block text-[11px] text-stone-400">শুধু অ্যাডমিন দেখতে পান — গ্রাহকরা নন</span>
+                </p>
+              ); })()}
               {detail.user.role === 'kitchen' && <p><span className="text-stone-400">ওয়ালেট:</span> ৳{detail.user.walletBalance ?? 0} · <span className="text-stone-400">রেটিং:</span> {detail.user.rating ?? 0}</p>}
               <p><span className="text-stone-400">যোগ দিয়েছেন:</span> {new Date(detail.user.createdAt).toLocaleDateString('bn-BD')}</p>
             </div>
@@ -201,7 +247,9 @@ export default function AdminUsersPage() {
                 <h3 className="text-sm font-semibold text-stone-700 mb-1">সেভ করা ঠিকানা</h3>
                 <ul className="text-sm text-stone-600 space-y-1">
                   {detail.user.addresses.map((a) => (
-                    <li key={a._id}>• <b>{a.label}:</b> {a.buildingName}, {a.addressLine}, {a.areaId?.name}, {a.areaId?.thana?.name}, {a.areaId?.city?.name}-{a.areaId?.zipCode}</li>
+                    <li key={a._id}>• <b>{a.label}:</b> {a.buildingName}, {a.addressLine}, {a.areaId?.name}, {a.areaId?.thana?.name}, {a.areaId?.city?.name}-{a.areaId?.zipCode}
+                      {(() => { const p = toLatLng(a.location); return p ? <a href={mapsLink(p)} target="_blank" rel="noopener noreferrer" className="ml-1 text-xs text-blue-700 hover:underline">🗺️ ম্যাপ</a> : null; })()}
+                    </li>
                   ))}
                 </ul>
               </div>

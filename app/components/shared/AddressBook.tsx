@@ -1,9 +1,11 @@
 'use client';
-import { useEffect, useState } from 'react';
+import Loader from '../ui/Loader';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../lib/api';
 import { getErrorMessage } from '../../lib/errors';
-import { AreaDetail, areaLabel } from '../../lib/locations';
+import { AreaDetail, areaLabel, useAreaDetail } from '../../lib/locations';
+import MapPicker, { LatLng, toLatLng, areaForPin } from './MapPicker';
 import LocationPicker from './LocationPicker';
 
 export interface SavedAddress {
@@ -14,17 +16,19 @@ export interface SavedAddress {
   addressLine: string;
   phone?: string;
   isDefault: boolean;
+  location?: { coordinates: [number, number] } | null;
 }
 
-interface AddressForm {
+export interface AddressForm {
   label: string;
   areaId: string;
   buildingName: string;
   addressLine: string;
   phone: string;
+  location: LatLng | null;   // ম্যাপের পিন (ঐচ্ছিক)
 }
 
-const EMPTY: AddressForm = { label: 'বাসা', areaId: '', buildingName: '', addressLine: '', phone: '' };
+const EMPTY: AddressForm = { label: 'বাসা', areaId: '', buildingName: '', addressLine: '', phone: '', location: null };
 const inputCls = 'w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400';
 
 export const formatAddress = (a: SavedAddress) =>
@@ -38,9 +42,28 @@ export async function loadAddresses(): Promise<SavedAddress[]> {
 // ─── ঠিকানা ফর্ম (নতুন/সম্পাদনা) ─────────────────────────
 export function AddressFormFields({ value, onChange }: { value: AddressForm; onChange: (v: AddressForm) => void }) {
   const set = (k: keyof AddressForm, v: string) => onChange({ ...value, [k]: v });
+  const area = useAreaDetail(value.areaId);
+  // পিন বসানো আর এরিয়া খুঁজে পাওয়া পরপর ঘটে — সর্বশেষ ফর্ম মান ধরে রাখতে
+  const latest = useRef(value);
+  useEffect(() => { latest.current = value; }, [value]);
   return (
     <div className="space-y-3">
       <LocationPicker value={value.areaId} onChange={(id) => set('areaId', id)} />
+      <MapPicker
+        value={value.location}
+        areaCenter={area?.location?.coordinates ?? null}
+        onChange={(location) => { latest.current = { ...latest.current, location }; onChange(latest.current); }}
+        onAreaDetected={(r) => {
+          // পিন যে এলাকায় পড়ল সেটা ড্রপডাউনে বসাই (সীমানার কাছে হলে আগের বাছাই থাকে)
+          const a = areaForPin(latest.current.areaId, r);
+          if (!a) return;
+          toast.success(`এলাকা: ${areaLabel(a)} — ভুল হলে উপর থেকে বদলে নিন`);
+          latest.current = { ...latest.current, areaId: a._id };
+          onChange(latest.current);
+        }}
+        title="🗺️ ম্যাপে বাসার জায়গা দেখান"
+        hint="দিলে ডেলিভারি চার্জ আরো সঠিক হয় আর ডেলিভারিকারী সহজে খুঁজে পান।"
+      />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <input value={value.buildingName} onChange={(e) => set('buildingName', e.target.value)} placeholder="বিল্ডিং/বাসার নাম" className={inputCls} />
         <input value={value.addressLine} onChange={(e) => set('addressLine', e.target.value)} placeholder="বাসা/রোড/ফ্ল্যাট নম্বর" className={inputCls} />
@@ -76,7 +99,7 @@ export default function AddressBook({ onChanged }: { onChanged?: (list: SavedAdd
 
   const startNew = () => { setForm(EMPTY); setEditingId('new'); };
   const startEdit = (a: SavedAddress) => {
-    setForm({ label: a.label, areaId: a.areaId?._id ?? '', buildingName: a.buildingName, addressLine: a.addressLine, phone: a.phone ?? '' });
+    setForm({ label: a.label, areaId: a.areaId?._id ?? '', buildingName: a.buildingName, addressLine: a.addressLine, phone: a.phone ?? '', location: toLatLng(a.location) });
     setEditingId(a._id);
   };
 
@@ -116,7 +139,7 @@ export default function AddressBook({ onChanged }: { onChanged?: (list: SavedAdd
     } catch (e) { toast.error(getErrorMessage(e, 'ব্যর্থ হয়েছে')); }
   };
 
-  if (loading) return <p className="text-sm text-stone-500">লোড হচ্ছে...</p>;
+  if (loading) return <Loader size="sm" inline label="ঠিকানা আনা হচ্ছে…" />;
 
   return (
     <div className="space-y-3">
@@ -139,6 +162,7 @@ export default function AddressBook({ onChanged }: { onChanged?: (list: SavedAdd
                   {a.label} {a.isDefault && <span className="ml-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">ডিফল্ট</span>}
                 </p>
                 <p className="text-sm text-stone-600">{formatAddress(a)}</p>
+                <p className="text-xs mt-0.5">{a.location ? <span className="text-green-700">📍 ম্যাপে পিন দেওয়া আছে</span> : <span className="text-stone-400">ম্যাপে পিন নেই — সম্পাদনা থেকে দিন</span>}</p>
                 {a.phone && <p className="text-xs text-stone-400">📞 {a.phone}</p>}
               </div>
               <div className="flex gap-3 text-sm">

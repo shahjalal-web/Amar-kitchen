@@ -1,4 +1,6 @@
 'use client';
+import { toLatLng, mapsLink } from '../../../components/shared/MapPicker';
+import { SkeletonCards } from '../../../components/ui/Loader';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -21,9 +23,11 @@ interface DeliveryOrder {
   totalAmount: number;
   deliveryCharge: number;
   deliveryAddress: string;
+  deliveryLocation?: { coordinates: [number, number] } | null;
+  distanceKm?: number;
   customerPhone?: string;
   area: string;
-  kitchen: { _id: string; name: string; kitchenName?: string; phone: string; area?: string; buildingAddress?: string } | string;
+  kitchen: { _id: string; name: string; kitchenName?: string; phone: string; area?: string; buildingAddress?: string; kitchenLocation?: { coordinates: [number, number] } | null } | string;
   user: { _id: string; name: string; phone: string } | string;
   items: OrderItem[];
   paymentMethod?: string;
@@ -83,6 +87,11 @@ export default function DeliveryPickupsPage() {
             </p>
             <p className="text-sm text-stone-600">🏠 ডেলিভারি: {customer?.name || '—'} · 📞 {order.customerPhone || customer?.phone || ''}</p>
             <p className="text-sm text-stone-500">{order.deliveryAddress}</p>
+            <div className="flex flex-wrap gap-3 text-xs">
+              {(() => { const p = toLatLng(kitchen?.kitchenLocation); return p ? <a href={mapsLink(p)} target="_blank" rel="noopener noreferrer" className="text-orange-700 hover:underline">🗺️ পিকআপ (কিচেন) ম্যাপে</a> : null; })()}
+              {(() => { const p = toLatLng(order.deliveryLocation); return p ? <a href={mapsLink(p)} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">🗺️ গ্রাহকের লোকেশন ম্যাপে</a> : null; })()}
+              {order.distanceKm ? <span className="text-stone-500">📏 ~{order.distanceKm} কিমি</span> : null}
+            </div>
             <p className="text-xs text-stone-400">{new Date(order.createdAt).toLocaleString('bn-BD')}</p>
           </div>
           <div className="text-right">
@@ -130,7 +139,7 @@ export default function DeliveryPickupsPage() {
       <AvailabilityToggle onChange={() => loadData()} />
 
       {loading ? (
-        <p className="text-stone-500">লোড হচ্ছে...</p>
+        <SkeletonCards count={4} />
       ) : (
         <>
           <h2 className="font-semibold text-stone-700 mb-3">🚴 আমার ডেলিভারি</h2>

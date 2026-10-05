@@ -1,4 +1,5 @@
 'use client';
+import Loader from '../../components/ui/Loader';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import api from '../../lib/api';
@@ -110,7 +111,7 @@ export default function AdminDashboard() {
   }, []);
 
   if (error) return <p className="text-red-500">ড্যাশবোর্ড লোড করা যায়নি।</p>;
-  if (!data) return <p className="text-stone-500">লোড হচ্ছে...</p>;
+  if (!data) return <Loader />;
 
   const total14 = data.last14.reduce((s, d) => s + d.orders, 0);
   const revenue14 = data.last14.reduce((s, d) => s + d.revenue, 0);

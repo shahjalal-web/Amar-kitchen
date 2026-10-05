@@ -1,4 +1,7 @@
 'use client';
+import { useAuthStore } from '../../../store/authStore';
+import { can } from '../../../lib/permissions';
+import { SkeletonCards } from '../../../components/ui/Loader';
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../../lib/api';
@@ -33,6 +36,7 @@ const LIVE: OrderStatus[] = ['pending', 'accepted', 'ready', 'picked_up'];
 const inputCls = 'border border-stone-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-400';
 
 export default function AdminOrdersPage() {
+  const canManage = can(useAuthStore((st) => st.user), 'orders.manage');
   const { cities } = useCities();
   const [status, setStatus] = useState<'all' | OrderStatus>('all');
   const [city, setCity] = useState('');
@@ -94,7 +98,7 @@ export default function AdminOrdersPage() {
       <p className="text-sm text-stone-500 mb-3">মোট {data.total.toLocaleString('bn-BD')}টি অর্ডার</p>
 
       {loading ? (
-        <p className="text-stone-500">লোড হচ্ছে...</p>
+        <SkeletonCards count={4} />
       ) : data.items.length === 0 ? (
         <p className="text-stone-500">কোনো অর্ডার পাওয়া যায়নি।</p>
       ) : (
@@ -126,7 +130,7 @@ export default function AdminOrdersPage() {
                       {o.items.map((it, i) => <li key={i}>• {it.foodItem?.name ?? '—'} × {it.quantity} (৳{it.price})</li>)}
                     </ul>
                     <p className="pt-1">খাবার ৳{o.totalAmount} + ডেলিভারি ৳{o.deliveryCharge}</p>
-                    {LIVE.includes(o.status) && (
+                    {canManage && LIVE.includes(o.status) && (
                       <button onClick={() => cancel(o)} className="mt-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium px-3 py-1.5 rounded-lg">
                         অর্ডার বাতিল করুন
                       </button>

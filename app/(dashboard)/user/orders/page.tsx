@@ -1,4 +1,5 @@
 'use client';
+import { SkeletonCards } from '../../../components/ui/Loader';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../../lib/api';
@@ -111,7 +112,7 @@ export default function UserOrdersPage() {
       </div>
 
       {loading ? (
-        <p className="text-stone-500">লোড হচ্ছে...</p>
+        <SkeletonCards count={4} />
       ) : filteredOrders.length === 0 ? (
         <p className="text-stone-500">কোনো অর্ডার নেই।</p>
       ) : (

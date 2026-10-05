@@ -1,9 +1,11 @@
 'use client';
+import Loader from '../../../components/ui/Loader';
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../../store/authStore';
 import api from '../../../lib/api';
+import { FoodPreview, FoodThumb } from '../../../components/shared/FoodViewer';
+import { FoodImage } from '../../../lib/foodImages';
 
 type SubStatus = 'active' | 'cancel_pending' | 'cancelled';
 
@@ -11,6 +13,9 @@ interface FoodRef {
   _id: string;
   name: string;
   image: string;
+  images?: FoodImage[];
+  category?: string;
+  imageCredit?: string;
 }
 
 interface SubItem {
@@ -158,7 +163,7 @@ export default function UserSubscriptionPage() {
       <p className="text-stone-500 mb-6">প্রতিদিনের জন্য খাবার সাবস্ক্রাইব করুন</p>
 
       {loading ? (
-        <p className="text-stone-500">লোড হচ্ছে...</p>
+        <Loader />
       ) : (
         <>
           <h2 className="font-semibold text-stone-700 mb-3">আমার সাবস্ক্রিপশন</h2>
@@ -215,8 +220,8 @@ export default function UserSubscriptionPage() {
               {menus.map((menu) => {
                 const alreadySubscribed = subscribedKitchenIds.has(menu.kitchen._id);
                 return (
-                  <div key={menu._id} className="bg-white rounded-2xl p-5 shadow-sm">
-                    <p className="font-semibold text-stone-800 mb-3">{menu.kitchen.kitchenName || menu.kitchen.name}</p>
+                  <div key={menu._id} className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm">
+                    <p className="text-lg font-bold text-stone-800 mb-2">{menu.kitchen.kitchenName || menu.kitchen.name}</p>
 
                     {alreadySubscribed ? (
                       <p className="text-sm text-stone-500">আপনি ইতিমধ্যে এই কিচেনে সাবস্ক্রাইব করা আছেন।</p>
@@ -225,33 +230,40 @@ export default function UserSubscriptionPage() {
                         <div className="space-y-2">
                           {menu.items.map((it) => {
                             const qty = cart[menu._id]?.[it.foodItem._id] || 0;
+                            const controls = (big: boolean) => (
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button type="button" onClick={() => updateQty(menu._id, it.foodItem._id, -1)} disabled={!qty} className={`${big ? 'w-11 h-11 text-xl' : 'w-9 h-9 text-lg'} rounded-full bg-stone-100 hover:bg-stone-200 disabled:opacity-40 text-stone-700 font-bold`} aria-label="কমান">−</button>
+                                <span className="w-7 text-center font-semibold">{qty}</span>
+                                <button type="button" onClick={() => updateQty(menu._id, it.foodItem._id, 1)} className={`${big ? 'w-11 h-11 text-xl' : 'w-9 h-9 text-lg'} rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold`} aria-label="বাড়ান">+</button>
+                              </div>
+                            );
                             return (
-                              <div key={it.foodItem._id} className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-3">
-                                  <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                                    <Image src={it.foodItem.image} alt={it.foodItem.name} fill className="object-cover" />
-                                  </div>
-                                  <div>
-                                    <p className="text-sm font-medium text-stone-700">{it.foodItem.name}</p>
-                                    <p className="text-xs text-stone-500">৳{it.price}</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <button onClick={() => updateQty(menu._id, it.foodItem._id, -1)} className="w-7 h-7 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold">−</button>
-                                  <span className="w-6 text-center text-sm">{qty}</span>
-                                  <button onClick={() => updateQty(menu._id, it.foodItem._id, 1)} className="w-7 h-7 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold">+</button>
-                                </div>
+                              <div key={it.foodItem._id} className="flex items-center gap-3 py-2">
+                                <FoodPreview
+                                  food={it.foodItem}
+                                  price={it.price}
+                                  subtitle={`🍳 ${menu.kitchen.kitchenName || menu.kitchen.name} · প্রতিদিন`}
+                                  footer={<div className="flex items-center justify-between gap-3"><span className="text-sm text-stone-600">প্রতিদিনের পরিমাণ</span>{controls(true)}</div>}
+                                  className="flex items-center gap-3 flex-1 min-w-0"
+                                >
+                                  <FoodThumb food={it.foodItem} size="md" />
+                                  <span className="min-w-0">
+                                    <span className="block text-base sm:text-lg font-semibold text-stone-800 leading-snug">{it.foodItem.name}</span>
+                                    <span className="block text-base font-bold text-orange-600">৳{it.price}</span>
+                                  </span>
+                                </FoodPreview>
+                                {controls(false)}
                               </div>
                             );
                           })}
                         </div>
 
-                        <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                        <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-4 border-t">
                           <p className="text-lg font-bold text-orange-600">দৈনিক: ৳{getSubtotal(menu)}</p>
                           <button
                             onClick={() => handleSubscribe(menu)}
                             disabled={subscribingId === menu._id || getSubtotal(menu) === 0}
-                            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition"
+                            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold px-6 py-3 rounded-xl transition"
                           >
                             {subscribingId === menu._id ? 'সাবস্ক্রাইব হচ্ছে...' : 'সাবস্ক্রাইব করুন'}
                           </button>
