@@ -12,12 +12,12 @@ export type { LatLng };
 // Leaflet ব্রাউজার ছাড়া চলে না, আর ভারী — তাই শুধু ম্যাপ খুললে লোড হয়
 const MapPickerInner = dynamic(() => import('./MapPickerInner'), {
   ssr: false,
-  loading: () => <div className="h-[260px] grid place-items-center bg-stone-50 rounded-xl"><Loader size="sm" label="ম্যাপ আসছে…" /></div>,
+  loading: () => <div className="h-65 grid place-items-center bg-stone-50 rounded-xl"><Loader size="sm" label="ম্যাপ আসছে…" /></div>,
 });
 
 const GoogleMapPickerInner = dynamic(() => import('./GoogleMapPickerInner'), {
   ssr: false,
-  loading: () => <div className="h-[300px] grid place-items-center bg-stone-50 rounded-xl"><Loader size="sm" label="Google ম্যাপ আসছে…" /></div>,
+  loading: () => <div className="h-75 grid place-items-center bg-stone-50 rounded-xl"><Loader size="sm" label="Google ম্যাপ আসছে…" /></div>,
 });
 
 // আসল Google key দেখতে "AIza…" (৩৯ অক্ষর)। না থাকলে/ভুল হলে ফ্রি OpenStreetMap ম্যাপ + এরিয়া সার্চ।
@@ -50,7 +50,7 @@ function AreaSearch({ onPick }: { onPick: (p: LatLng) => void }) {
         className="w-full border border-stone-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
       />
       {items.length > 0 && (
-        <ul className="absolute z-[500] left-0 right-0 mt-1 bg-white border border-stone-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+        <ul className="absolute z-500 left-0 right-0 mt-1 bg-white border border-stone-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
           {items.map((a) => (
             <li key={a._id}>
               <button
