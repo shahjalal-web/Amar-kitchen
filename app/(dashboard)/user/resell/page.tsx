@@ -29,15 +29,15 @@ export default function UserResellPage() {
   const [buyingId, setBuyingId] = useState<string | null>(null);
 
   const loadOrders = () => {
-    if (!user?.area) { setLoading(false); return; }
+    if (!user?.areaId) { setLoading(false); return; }
     setLoading(true);
-    api.get('/orders/resell', { params: { area: user.area } })
+    api.get('/orders/resell', { params: { areaId: user.areaId } })
       .then((r) => setOrders(r.data.data))
       .catch(() => toast.error('লোড ব্যর্থ হয়েছে'))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { loadOrders(); }, [user?.area]);
+  useEffect(() => { loadOrders(); }, [user?.areaId]);
 
   const handleBuy = async (id: string) => {
     setBuyingId(id);
@@ -58,7 +58,7 @@ export default function UserResellPage() {
       <h1 className="text-2xl font-bold text-stone-800 mb-1">♻️ রিসেল</h1>
       <p className="text-stone-500 mb-6">বাতিল হওয়া অর্ডার ছাড়ে কিনুন</p>
 
-      {!user?.area ? (
+      {!user?.areaId ? (
         <p className="text-stone-500">প্রোফাইলে এলাকা সেট করা নেই।</p>
       ) : loading ? (
         <p className="text-stone-500">লোড হচ্ছে...</p>

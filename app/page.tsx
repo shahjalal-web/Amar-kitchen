@@ -447,7 +447,7 @@ export default function HomePage() {
             <div className="mb-10 sm:mb-0 max-w-xs">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-2xl">🍱</span>
-                <span className="text-xl font-extrabold">আমার কিচেন</span>
+                <span className="text-xl font-extrabold">শখের কিচেন</span>
               </div>
               <p className="text-stone-400 text-sm leading-relaxed">
                 বাংলাদেশের প্রথম হোম কিচেন মার্কেটপ্লেস। ঘরের রান্না, দোরগোড়ায় পৌঁছে দেওয়া।
@@ -475,7 +475,7 @@ export default function HomePage() {
               <div>
                 <p className="font-bold text-stone-200 mb-4">যোগাযোগ</p>
                 <div className="space-y-2.5 text-sm text-stone-400">
-                  <p>📧 support@amarkitchen.com</p>
+                  <p>📧 support@shokherkitchen.com</p>
                   <p>📱 +৮৮০ ১৭০০-০০০০০০</p>
                   <p>📍 ঢাকা, বাংলাদেশ</p>
                 </div>
@@ -484,7 +484,7 @@ export default function HomePage() {
           </div>
 
           <div className="border-t border-stone-700 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-stone-500">
-            <p>© ২০২৬ আমার কিচেন। সর্বস্বত্ব সংরক্ষিত।</p>
+            <p>© ২০২৬ শখের কিচেন। সর্বস্বত্ব সংরক্ষিত।</p>
             <p className="text-stone-600">Made with ❤️ for Bangladesh</p>
           </div>
         </div>

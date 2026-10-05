@@ -1,7 +1,7 @@
 // ব্রাউজার থেকে সরাসরি Cloudinary তে আনসাইনড আপলোড — ব্যাকএন্ডে শুধু URL পাঠানো হয়
 export const uploadImageToCloudinary = (
   file: File,
-  folder = 'amar-kitchen',
+  folder = 'shokher-kitchen',
   onProgress?: (percent: number) => void
 ): Promise<string> => {
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;

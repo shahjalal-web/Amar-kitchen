@@ -2,11 +2,13 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../../lib/api';
+import MyFoods from './MyFoods';
 
 interface FoodItem {
   _id: string;
   name: string;
   category: string;
+  source?: 'admin' | 'kitchen';
 }
 
 interface MenuItem {
@@ -142,7 +144,7 @@ export default function KitchenMenuPage() {
       {loading ? (
         <p className="text-stone-500">লোড হচ্ছে...</p>
       ) : foods.length === 0 ? (
-        <p className="text-stone-500">খাবার লাইব্রেরিতে কোনো সক্রিয় খাবার নেই। অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
+        <p className="text-stone-500">কোনো সক্রিয় খাবার নেই। নিচে নিজের খাবার যোগ করুন অথবা অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
       ) : (
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
           <div>
@@ -158,7 +160,14 @@ export default function KitchenMenuPage() {
                     onChange={(e) => updateItemRow(idx, 'foodItem', e.target.value)}
                     className="flex-1 border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                   >
-                    {foods.map((f) => <option key={f._id} value={f._id}>{f.name} ({f.category})</option>)}
+                    <optgroup label="অ্যাডমিন লাইব্রেরি">
+                      {foods.filter((f) => f.source !== 'kitchen').map((f) => <option key={f._id} value={f._id}>{f.name} ({f.category})</option>)}
+                    </optgroup>
+                    {foods.some((f) => f.source === 'kitchen') && (
+                      <optgroup label="আমার নিজের খাবার">
+                        {foods.filter((f) => f.source === 'kitchen').map((f) => <option key={f._id} value={f._id}>{f.name} ({f.category})</option>)}
+                      </optgroup>
+                    )}
                   </select>
                   <input
                     type="number"
@@ -204,6 +213,8 @@ export default function KitchenMenuPage() {
           </button>
         </form>
       )}
+
+      <MyFoods onChanged={loadData} />
     </div>
   );
 }

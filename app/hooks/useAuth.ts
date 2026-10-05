@@ -13,8 +13,12 @@ export const useAuthInit = () => {
       if (firebaseUser) {
         const storedToken = localStorage.getItem('ak_token');
 
-        // No backend token yet — login page is handling the flow, don't interfere
+        // No backend token yet — login page is handling the flow, don't interfere.
+        // তবে পুরনো কুকি থেকে গেলে মুছে দাও, নইলে proxy ভাবে লগইন করা আছে।
         if (!storedToken) {
+          if (document.cookie.includes('ak_token=')) {
+            document.cookie = 'ak_token=; path=/; max-age=0; SameSite=Lax';
+          }
           setLoading(false);
           return;
         }

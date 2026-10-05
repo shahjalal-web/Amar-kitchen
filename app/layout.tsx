@@ -12,7 +12,7 @@ const banglaFont = Noto_Sans_Bengali({
 });
 
 export const metadata: Metadata = {
-  title: 'আমার কিচেন',
+  title: 'শখের কিচেন',
   description: 'ঘরের রান্না, দোরগোড়ায় পৌঁছে দেওয়া',
 };
 

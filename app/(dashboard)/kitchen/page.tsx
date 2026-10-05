@@ -19,7 +19,7 @@ export default function KitchenDashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-stone-800 mb-1">{user?.kitchenName || 'আমার কিচেন'}</h1>
+      <h1 className="text-2xl font-bold text-stone-800 mb-1">{user?.kitchenName || 'শখের কিচেন'}</h1>
       <p className="text-stone-500 mb-8">আজকের রান্না পরিচালনা করুন</p>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

@@ -13,13 +13,13 @@ interface AuthUser {
   avatar?: string;
   walletBalance?: number;
   kitchenName?: string;
+  kitchenDescription?: string;
   buildingName?: string;
-  area?: string;
-  location?: {
-    type: 'Point';
-    coordinates: [number, number]; // [lng, lat]
-  };
+  buildingAddress?: string;
+  areaId?: string;   // user/kitchen — নির্বাচিত এলাকা
+  area?: string;     // এলাকার নাম
   deliveryAreaIds?: string[];
+  isAvailable?: boolean;     // ডেলিভারি বয় অ্যাক্টিভ/অফ
 }
 
 interface AuthState {

@@ -66,7 +66,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2 select-none">
           <span className="text-2xl">🍱</span>
           <span className={`text-xl font-extrabold tracking-tight ${transparent ? 'text-white' : 'text-green-700'}`}>
-            আমার কিচেন
+            শখের কিচেন
           </span>
         </Link>
 

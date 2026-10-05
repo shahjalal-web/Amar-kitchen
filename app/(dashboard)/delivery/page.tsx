@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import api from '../../lib/api';
 import Link from 'next/link';
+import { AvailabilityToggle } from '../../components/shared/DeliveryParts';
 
 interface EarningData {
   deliveryCount: number;
@@ -34,7 +35,8 @@ export default function DeliveryDashboard() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-stone-800 mb-1">ডেলিভারি ড্যাশবোর্ড</h1>
-      <p className="text-stone-500 mb-8">আজকের ডেলিভারি পরিচালনা করুন</p>
+      <p className="text-stone-500 mb-6">আজকের ডেলিভারি পরিচালনা করুন</p>
+      <AvailabilityToggle />
 
       <div className="grid grid-cols-3 gap-4 mb-8">
         {[

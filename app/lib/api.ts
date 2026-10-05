@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '../store/authStore';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -14,13 +15,19 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// 401 হলে login এ পাঠাও
+// 401 হলে localStorage ও কুকি দুটোই মুছে login এ পাঠাও।
+// শুধু localStorage মুছলে কুকি থেকে যেত → proxy /login থেকে / এ ফেরত পাঠাত → হোম পেজ বারবার রিফ্রেশ হত।
+// পাবলিক/অথ পেজে থাকলে হার্ড রিডাইরেক্ট করি না (সেখানেই রিডাইরেক্ট লুপ হচ্ছিল)।
+const PUBLIC_PATHS = ['/', '/login', '/register'];
+
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('ak_token');
-      window.location.href = '/login';
+      useAuthStore.getState().clearAuth();
+      if (!PUBLIC_PATHS.includes(window.location.pathname)) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(err);
   }

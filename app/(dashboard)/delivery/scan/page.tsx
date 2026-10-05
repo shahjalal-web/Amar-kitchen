@@ -1,5 +1,5 @@
 'use client';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import api from '../../../lib/api';
@@ -42,14 +42,11 @@ const STATUS_COLOR: Record<OrderStatus, string> = {
 
 function ScanForm() {
   const searchParams = useSearchParams();
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(() => searchParams.get('code') ?? '');
+  const [otp, setOtp] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ message: string; order: ScannedOrder } | null>(null);
 
-  useEffect(() => {
-    const prefill = searchParams.get('code');
-    if (prefill) setCode(prefill);
-  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,10 +55,11 @@ function ScanForm() {
     setSubmitting(true);
     setResult(null);
     try {
-      const res = await api.post('/delivery/scan', { uniqueCode: code.trim() });
+      const res = await api.post('/delivery/scan', { uniqueCode: code.trim(), otp: otp.trim() || undefined });
       toast.success(res.data.message || 'সফল হয়েছে');
       setResult({ message: res.data.message, order: res.data.data.order });
       setCode('');
+      setOtp('');
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
       toast.error(msg || 'ব্যর্থ হয়েছে');
@@ -73,7 +71,7 @@ function ScanForm() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-stone-800 mb-1">📱 কোড স্ক্যান</h1>
-      <p className="text-stone-500 mb-6">প্যাকেটের উপর লেখা অর্ডার কোডটি লিখে সাবমিট করুন</p>
+      <p className="text-stone-500 mb-6">পিকআপের সময় শুধু অর্ডার কোড দিন। ডেলিভারির সময় অর্ডার কোডের সাথে গ্রাহকের ৪ অঙ্কের ডেলিভারি কোডও দিন।</p>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 shadow-sm mb-6 max-w-md space-y-4">
         <div>
@@ -81,9 +79,19 @@ function ScanForm() {
           <input
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="যেমন: AK12345"
+            placeholder="যেমন: 7106E347"
             autoFocus
             className="w-full border border-stone-300 rounded-lg px-4 py-2.5 text-lg tracking-wide focus:outline-none focus:ring-2 focus:ring-orange-400"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-1">গ্রাহকের ডেলিভারি কোড <span className="text-stone-400 font-normal">(শুধু ডেলিভারির সময়)</span></label>
+          <input
+            value={otp}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
+            inputMode="numeric"
+            placeholder="••••"
+            className="w-32 text-center tracking-[0.4em] font-semibold border border-stone-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-400"
           />
         </div>
         <button

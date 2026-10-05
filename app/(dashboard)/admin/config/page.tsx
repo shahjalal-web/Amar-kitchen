@@ -6,6 +6,9 @@ import api from '../../../lib/api';
 interface ConfigData {
   defaultOrderLimit: number;
   deliveryBaseFee: number;
+  sameAreaDeliveryFee: number;
+  sameThanaDeliveryFee: number;
+  nearbyRadiusKm: number;
   deliveryDiscountPercentPerOrder: number;
   maxDeliveryDiscount: number;
   commissionRate: number;
@@ -13,7 +16,10 @@ interface ConfigData {
 
 const FIELDS: { key: keyof ConfigData; label: string; suffix?: string }[] = [
   { key: 'defaultOrderLimit', label: 'ডিফল্ট অর্ডার লিমিট (প্রতি কিচেন)' },
-  { key: 'deliveryBaseFee', label: 'বেস ডেলিভারি চার্জ', suffix: '৳' },
+  { key: 'sameAreaDeliveryFee', label: 'ডেলিভারি চার্জ — কিচেন ও গ্রাহক একই এরিয়ায়', suffix: '৳' },
+  { key: 'sameThanaDeliveryFee', label: 'ডেলিভারি চার্জ — একই থানার অন্য এরিয়ায়', suffix: '৳' },
+  { key: 'deliveryBaseFee', label: 'ডেলিভারি চার্জ — অন্য থানায়', suffix: '৳' },
+  { key: 'nearbyRadiusKm', label: '"আশেপাশের টপ কিচেন" খোঁজার পরিধি', suffix: 'কিমি' },
   { key: 'deliveryDiscountPercentPerOrder', label: 'প্রতি অতিরিক্ত অর্ডারে ছাড়', suffix: '%' },
   { key: 'maxDeliveryDiscount', label: 'সর্বোচ্চ ডেলিভারি ছাড়', suffix: '%' },
   { key: 'commissionRate', label: 'অ্যাডমিন কমিশন রেট', suffix: '%' },
@@ -62,7 +68,7 @@ export default function AdminConfigPage() {
               <div className="relative">
                 <input
                   type="number"
-                  value={config[field.key]}
+                  value={config[field.key] ?? ''}
                   onChange={(e) => handleChange(field.key, Number(e.target.value))}
                   className="w-full border border-stone-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-400"
                   min={0}

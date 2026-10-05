@@ -11,8 +11,11 @@ interface FoodItem {
   _id: string;
   name: string;
   image: string;
+  imageCredit?: string;
   category: FoodCategory;
   isActive: boolean;
+  source?: 'admin' | 'kitchen';
+  kitchen?: { _id: string; name: string; kitchenName?: string } | null;
 }
 
 const CATEGORIES: FoodCategory[] = ['ভাত', 'রুটি', 'মাছ', 'মাংস', 'সবজি', 'ডাল', 'সালাদ', 'পানীয়', 'অন্যান্য'];
@@ -26,7 +29,7 @@ export default function AdminFoodsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [filter, setFilter] = useState<'all' | 'active' | 'inactive' | 'admin' | 'kitchen'>('all');
 
   const loadFoods = () => {
     api.get('/admin/foods').then((r) => setFoods(r.data.data)).catch(() => toast.error('লোড ব্যর্থ হয়েছে')).finally(() => setLoading(false));
@@ -37,6 +40,8 @@ export default function AdminFoodsPage() {
   const filteredFoods = foods.filter((item) => {
     if (filter === 'active') return item.isActive;
     if (filter === 'inactive') return !item.isActive;
+    if (filter === 'admin') return item.source !== 'kitchen';
+    if (filter === 'kitchen') return item.source === 'kitchen';
     return true;
   });
 
@@ -133,7 +138,7 @@ export default function AdminFoodsPage() {
             label="ছবি"
             value={form.image}
             onChange={(url) => setForm((f) => ({ ...f, image: url }))}
-            folder="amar-kitchen/foods"
+            folder="shokher-kitchen/foods"
           />
 
           <button
@@ -146,11 +151,13 @@ export default function AdminFoodsPage() {
         </form>
       )}
 
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         {([
           { key: 'all', label: 'সব' },
           { key: 'active', label: 'সক্রিয়' },
           { key: 'inactive', label: 'নিষ্ক্রিয়' },
+          { key: 'admin', label: '🛡️ অ্যাডমিন লাইব্রেরি' },
+          { key: 'kitchen', label: '🧑‍🍳 কিচেনের তৈরি' },
         ] as const).map((opt) => (
           <button
             key={opt.key}
@@ -174,12 +181,16 @@ export default function AdminFoodsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredFoods.map((item) => (
             <div key={item._id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="relative w-full h-32">
+              <div className="relative w-full h-32" title={item.imageCredit}>
                 <Image src={item.image} alt={item.name} fill className="object-cover" />
+                <span className={`absolute top-2 left-2 text-[10px] px-2 py-0.5 rounded-full ${item.source === 'kitchen' ? 'bg-orange-500 text-white' : 'bg-white/90 text-stone-700'}`}>
+                  {item.source === 'kitchen' ? `🧑‍🍳 ${item.kitchen?.kitchenName || item.kitchen?.name || 'কিচেন'}` : '🛡️ অ্যাডমিন'}
+                </span>
               </div>
               <div className="p-3">
                 <p className="font-medium text-stone-700">{item.name}</p>
                 <p className="text-xs text-stone-500 mb-2">{item.category}</p>
+                {item.imageCredit && <p className="text-[10px] text-stone-400 mb-2 line-clamp-2" title={item.imageCredit}>{item.imageCredit}</p>}
                 <div className="flex items-center justify-between text-sm">
                   <button onClick={() => handleEdit(item)} className="text-blue-600 hover:underline">সম্পাদনা</button>
                   <button

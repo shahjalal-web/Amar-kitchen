@@ -6,7 +6,9 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { auth } from '../../lib/firebase';
 import api from '../../lib/api';
+import { getErrorMessage } from '../../lib/errors';
 import { useAuthStore } from '../../store/authStore';
+import DemoLoginPanel from './DemoLoginPanel';
 
 type LoginForm = { email: string; password: string };
 
@@ -15,10 +17,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>();
 
-  const onSubmit = async (data: LoginForm) => {
+  const onSubmit = (data: LoginForm) => doLogin(data.email, data.password);
+
+  const doLogin = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const cred = await signInWithEmailAndPassword(auth, data.email, data.password);
+      const cred = await signInWithEmailAndPassword(auth, email, password);
       const firebaseToken = await cred.user.getIdToken();
       const res = await api.post('/auth/login', { firebaseToken });
       const { user, token } = res.data.data;
@@ -34,8 +38,7 @@ export default function LoginPage() {
       // Full page navigation — ensures cookie is sent with the next server request
       window.location.href = dashboardMap[user.role] || '/';
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      toast.error(msg || 'লগইন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।');
+      toast.error(getErrorMessage(err, 'লগইন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।'));
     } finally {
       setLoading(false);
     }
@@ -82,6 +85,9 @@ export default function LoginPage() {
           নতুন একাউন্ট খুলুন
         </Link>
       </p>
+
+      {/* 🧪 টেস্টিং শেষে মুছে ফেলুন */}
+      <DemoLoginPanel onLogin={doLogin} busy={loading} />
     </>
   );
 }

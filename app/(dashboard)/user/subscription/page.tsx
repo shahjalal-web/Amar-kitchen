@@ -73,18 +73,24 @@ export default function UserSubscriptionPage() {
   const loadData = () => {
     setLoading(true);
     const requests: Promise<unknown>[] = [api.get('/subscription/mine')];
-    if (user?.area) requests.push(api.get('/kitchen/nearby', { params: { area: user.area } }));
+    // প্রোফাইলের এলাকার কিচেন সাজেশন — যাদের আজকের মেনু আছে শুধু তাদের দেখাই
+    if (user?.areaId) requests.push(api.get('/kitchen/suggestions', { params: { areaId: user.areaId } }));
 
     Promise.all(requests)
       .then((results) => {
         setSubs((results[0] as { data: { data: Subscription[] } }).data.data);
-        if (results[1]) setMenus((results[1] as { data: { data: DailyMenu[] } }).data.data);
+        if (results[1]) {
+          const suggestions = (results[1] as { data: { data: { kitchen: KitchenRef; menu: Omit<DailyMenu, 'kitchen'> | null }[] } }).data.data;
+          setMenus(suggestions.filter((s) => s.menu).map((s) => ({ ...s.menu!, kitchen: s.kitchen })));
+        } else {
+          setMenus([]);
+        }
       })
       .catch(() => toast.error('লোড ব্যর্থ হয়েছে'))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { loadData(); }, [user?.area]);
+  useEffect(() => { loadData(); }, [user?.areaId]);
 
   const updateQty = (menuId: string, foodItemId: string, delta: number) => {
     setCart((prev) => {
@@ -200,7 +206,7 @@ export default function UserSubscriptionPage() {
           )}
 
           <h2 className="font-semibold text-stone-700 mb-3">নতুন সাবস্ক্রিপশন শুরু করুন</h2>
-          {!user?.area ? (
+          {!user?.areaId ? (
             <p className="text-stone-500">প্রোফাইলে এলাকা সেট করা নেই।</p>
           ) : menus.length === 0 ? (
             <p className="text-stone-500">আপনার এলাকায় কোনো কিচেনের মেনু পাওয়া যায়নি।</p>
