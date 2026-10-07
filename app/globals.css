@@ -140,3 +140,7 @@ body {
   .sk-steam, .sk-pot, .sk-bit, .sk-label, .sk-shimmer, .sk-backdrop, .sk-sheet { animation: none; }
   .sk-steam { opacity: .6; }
 }
+
+/* ── হিরো ক্যারোসেল: বর্তমান স্লাইডের সময়ের দাগ ── */
+@keyframes hero-progress { from { width: 0; } to { width: 100%; } }
+.hero-progress { animation: hero-progress linear forwards; }

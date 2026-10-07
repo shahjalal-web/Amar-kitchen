@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
@@ -41,6 +41,12 @@ export default function RegisterPage() {
   });
 
   const role = watch('role');
+
+  // হোম পেজের "কিচেন খুলুন"/"ডেলিভারি করুন" বাটন থেকে এলে ?role= অনুযায়ী আগে থেকে বাছাই (পরে বদলানো যায়)
+  useEffect(() => {
+    const r = new URLSearchParams(window.location.search).get('role');
+    if (r === 'kitchen' || r === 'delivery' || r === 'user') setValue('role', r);
+  }, [setValue]);
 
   // user/kitchen-এর জন্য এলাকা বাধ্যতামূলক
   register('areaId', {

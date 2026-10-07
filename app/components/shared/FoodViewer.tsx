@@ -92,8 +92,6 @@ export function FoodModal({
     if (el) setIndex(Math.round(el.scrollLeft / el.clientWidth));
   };
 
-  const credit = imgs[index]?.credit;
-
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
       <div className="sk-backdrop absolute inset-0 bg-black/70" onClick={onClose} aria-hidden="true" />
@@ -106,7 +104,7 @@ export function FoodModal({
         <div className="relative bg-stone-900">
           <div ref={track} onScroll={onScroll} className="sk-no-scrollbar flex overflow-x-auto snap-x snap-mandatory">
             {imgs.length ? imgs.map((img, i) => (
-              <div key={img.url} className="relative shrink-0 w-full snap-center aspect-[4/3]">
+              <div key={img.url} className="relative shrink-0 w-full snap-center aspect-[4/3]" title={img.credit || undefined}>
                 <Image src={img.url} alt={`${food.name} — ছবি ${i + 1}`} fill sizes="(max-width: 640px) 100vw, 672px" className="object-cover" priority={i === 0} />
               </div>
             )) : (
@@ -168,7 +166,6 @@ export function FoodModal({
             {price !== undefined && <p className="text-2xl font-bold text-orange-600 shrink-0">৳{price}</p>}
           </div>
           {footer && <div className="mt-4">{footer}</div>}
-          {credit && <p className="mt-4 text-[11px] leading-relaxed text-stone-400 break-words">{credit}</p>}
         </div>
       </div>
     </div>,
