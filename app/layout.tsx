@@ -11,9 +11,26 @@ const banglaFont = Noto_Sans_Bengali({
   variable: '--font-bangla',
 });
 
+// লিংক শেয়ারের ছবির (opengraph-image.jpg) পুরো URL বানাতে লাগে।
+// লাইভে NEXT_PUBLIC_SITE_URL দিন; না দিলে Vercel-এর প্রোডাকশন ডোমেইন, তাও না থাকলে localhost
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:3000');
+
+const DESCRIPTION = 'পাশের বাসার গৃহিণীর যত্নে রাঁধা গরম খাবার — সাশ্রয়ে, পৌঁছে যায় আপনার দরজায়।';
+
 export const metadata: Metadata = {
-  title: 'শখের কিচেন',
-  description: 'ঘরের রান্না, দোরগোড়ায় পৌঁছে দেওয়া',
+  metadataBase: new URL(SITE_URL),
+  title: 'শখের কিচেন — মায়ের হাতের স্বাদ, এখন পাড়াতেই',
+  description: DESCRIPTION,
+  openGraph: {
+    type: 'website',
+    siteName: 'শখের কিচেন',
+    locale: 'bn_BD',
+    title: 'শখের কিচেন — মায়ের হাতের স্বাদ, এখন পাড়াতেই',
+    description: DESCRIPTION,
+  },
+  twitter: { card: 'summary_large_image' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

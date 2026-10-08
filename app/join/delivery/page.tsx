@@ -5,6 +5,13 @@ import RoleLink from '../../components/home/RoleLink';
 export const metadata: Metadata = {
   title: 'ডেলিভারি পার্টনার হোন — শখের কিচেন',
   description: 'নিজের এলাকায়, নিজের সময়ে খাবার ডেলিভারি করে আয় করুন। শখের কিচেনে ডেলিভারি পার্টনার হিসেবে যোগ দিন।',
+  openGraph: {
+    type: 'website',
+    siteName: 'শখের কিচেন',
+    locale: 'bn_BD',
+    title: 'ডেলিভারি পার্টনার হোন — শখের কিচেন',
+    description: 'নিজের এলাকায় ডেলিভারি, নিজের সময়ে আয় — প্রতিটি ডেলিভারি চার্জের ৯২% আপনার।',
+  },
 };
 
 const STEPS = [
